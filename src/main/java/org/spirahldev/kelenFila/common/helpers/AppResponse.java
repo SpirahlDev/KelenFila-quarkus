@@ -22,17 +22,6 @@ public class AppResponse<T> {
     public AppResponse() {
     }
 
-    /**
-     * Constructeur avec tous les paramètres
-     * @param status_code Code de statut de l'opération
-     * @param status_message Message personnalisé
-     * @param data Données à retourner
-     */
-    public AppResponse(AppStatusCode status_code, String status_message, T data) {
-        this.status_code = status_code.getCode();
-        this.status_message = status_message;
-        this.data = data;
-    }
 
     /**
      * Constructeur avec statut et données
@@ -45,13 +34,18 @@ public class AppResponse<T> {
         this.data = data;
     }
 
+    public AppResponse(AppStatusCode statusCode) {
+        this.status_code = statusCode.getCode();
+        this.status_message = statusCode.getMessage();
+    }
+
     // Getters et Setters
     public int getStatusCode() {
         return status_code;
     }
 
-    public void setStatusCode(int status_code) {
-        this.status_code = status_code;
+    public void setStatusCode(AppStatusCode status_code) {
+        this.status_code = status_code.getCode();
     }
 
     public String getStatusMessage() {

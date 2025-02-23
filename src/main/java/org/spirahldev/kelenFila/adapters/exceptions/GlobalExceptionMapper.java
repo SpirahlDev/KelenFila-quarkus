@@ -25,9 +25,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 return Response
                     .status(Response.Status.BAD_REQUEST)
                     .entity(new AppResponse<>(
-                        AppStatusCode.VALIDATION_ERROR,
-                        "Les données fournies ne sont pas valides _",
-                        exception.getMessage()
+                        AppStatusCode.VALIDATION_ERROR
                     ))
                     .build();
             }

@@ -1,4 +1,4 @@
-package org.spirahldev.kelenFila.adapters.http.api.routes;
+package org.spirahldev.kelenFila.adapters.http.api.controllers;
 
 import java.util.List;
 import java.util.Set;
@@ -25,8 +25,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("user")
 @ApplicationScoped
-public class User {
-
+public class UserController {
     @Inject
     Validator validator;
 
@@ -35,23 +34,13 @@ public class User {
     @Consumes("application/json")
     @Produces("application/json")
     @Path("client")
-    public Response clientRegister(@Valid ClientRegisterInput requestBody,
-        @PathParam("type") String type
-    ){
-        try {
+    public Response clientRegister(@Valid ClientRegisterInput requestBody){
         
-            return Response
-                .status(Response.Status.CREATED)
-                .entity(new AppResponse<>(AppStatusCode.SUCCESS_OPERATION, requestBody))
-                .build();
 
-        } catch (Exception e) {
-            Log.error("Erreur lors de l'inscription du client", e);
-            return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(e.getMessage())
-                .build();
-        }
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(new AppResponse<>(AppStatusCode.SUCCESS_OPERATION, requestBody))
+            .build();
     }
 
 }
