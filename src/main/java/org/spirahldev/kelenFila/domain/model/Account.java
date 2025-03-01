@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import org.spirahldev.kelenFila.domain.enums.PersonType;
 
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.UserDefinition;
+import io.quarkus.security.jpa.Username;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,6 +25,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Column(length = 160)
     private String login;
 
@@ -34,6 +38,7 @@ public class Account {
     @Column(name = "suspended_at")
     private LocalDateTime suspendedAt;
 
+
     @Column(name = "remember_token", length = 160)
     private String rememberToken;
 
@@ -41,8 +46,9 @@ public class Account {
     @Column(name = "person_type")
     private PersonType personType;
 
-    @Column(name = "profile_id")
-    private Integer profileId;
+    @OneToOne
+    @JoinColumn(name = "profile_id",nullable = false)
+    private ProfileEntity profile;
 
     @OneToOne
     @JoinColumn(name = "person_id",nullable = false)
@@ -57,5 +63,94 @@ public class Account {
     @Column(name = "deleted_at",nullable = true)
     private LocalDateTime deleteAt;
 
-    // Getters & Setters
+    @Column(name="verified_at")
+    private LocalDateTime verifiedAt;
+
+    public LocalDateTime getVerificationDate() {
+        return verifiedAt;
+    }
+
+    public void setProfile(ProfileEntity profile) {
+        this.profile = profile;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public ProfileEntity getProfile(){
+        return profile;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public LocalDateTime getSuspensionDate() {
+        return suspendedAt;
+    }
+
+
+
+    public void setSuspendedAt(LocalDateTime suspendedAt) {
+        this.suspendedAt = suspendedAt;
+    }
+
+    public String getRememberToken() {
+        return rememberToken;
+    }
+
+    public void setRememberToken(String rememberToken) {
+        this.rememberToken = rememberToken;
+    }
+
+    public PersonType getPersonType() {
+        return personType;
+    }
+
+    public void setPersonType(PersonType personType) {
+        this.personType = personType;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getDeleteAt() {
+        return deleteAt;
+    }
+
+    public void setDeleteAt(LocalDateTime deleteAt) {
+        this.deleteAt = deleteAt;
+    }
+
+    
 }

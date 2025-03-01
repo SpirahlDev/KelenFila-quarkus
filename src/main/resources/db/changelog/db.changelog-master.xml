@@ -1,0 +1,31 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/db-base-v0.1.sql" />
+    </changeSet>
+
+    <changeSet id="2" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/db-update.sql" />
+    </changeSet>
+
+    <changeSet id="3" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/db-profile-seed-v0.1.sql" />
+    </changeSet>    
+    
+    <changeSet id="4" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/add_deleted_at_column_to_person_table.sql" />
+    </changeSet>
+
+    <changeSet id="5" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/rename-residence_country-column-person-table.sql" />
+    </changeSet>
+
+       <changeSet id="6" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/add_deleted_at_column_to_account_table.sql" />
+    </changeSet>
+</databaseChangeLog>
+

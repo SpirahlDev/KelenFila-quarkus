@@ -36,7 +36,9 @@ public class AppResponse<T> {
 
     public AppResponse(AppStatusCode statusCode) {
         this.status_code = statusCode.getCode();
-        this.status_message = statusCode.getMessage();
+        if(this.status_message == null){
+            this.status_message = statusCode.getMessage();
+        }
     }
 
     // Getters et Setters
@@ -75,7 +77,7 @@ public class AppResponse<T> {
     }
 
     /**
-     * Crée une réponse d'erreur
+     * Crée directement une réponse d'erreur
      * @param statusCode Code de statut d'erreur
      * @param errors Détails de l'erreur
      * @return Map contenant les détails de l'erreur
@@ -87,6 +89,15 @@ public class AppResponse<T> {
         responseMap.put("statusMessage", statusCode.getMessage());
         return responseMap;
     }
+
+    public static Map<String,Object> sendTokken(String token) {
+        Map<String, Object> responseMap = new HashMap<String, Object>();
+        responseMap.put("token", token);
+        responseMap.put("statusCode", AppStatusCode.SUCCESS_OPERATION);
+        return responseMap;
+    }
+
+    
 
     /**
      * Crée une réponse pour les erreurs de validation

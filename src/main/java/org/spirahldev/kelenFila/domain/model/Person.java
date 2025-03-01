@@ -1,6 +1,9 @@
 package org.spirahldev.kelenFila.domain.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import org.spirahldev.kelenFila.app.IOmodel.input.PersonDataInput;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,8 +31,8 @@ public class Person {
     @Column(length = 200)
     private String email;
 
-    @Column(name = "residence_county")
-    private Integer residenceCounty;
+    @Column(name = "country_id")
+    private Integer country;
 
     @Column(name = "residence_city", length = 45)
     private String residenceCity;
@@ -52,9 +55,24 @@ public class Person {
     @Column(name = "deleted_at",nullable = true)
     private LocalDateTime deletedAt;
 
+    @Column(name="birth_date")
+    private LocalDate birthDate;
+
     // Getters & Setters
     public Long getId() {
         return id;
+    }
+
+    public LocalDate getBirthDate(){
+        return birthDate;
+    }
+
+    public void setIdentityCard(String identityCard) {
+        this.identityCard = identityCard;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 
     public String getLastname() {
@@ -93,4 +111,54 @@ public class Person {
         this.deletedAt = deletedAt;
     }
     
+
+    // public Person(PersonDataInput personData){
+    //     this.firstname=personData.firstName();
+    //     this.lastname=personData.lastName();
+    //     this.phoneNumber=personData.phone();
+    //     this.email=personData.email();
+    //     this.residenceCounty=personData.country();
+    //     this.residenceCity=personData.city();
+    //     this.address=personData.address();
+    //     this.birthDate=personData.birthDate();
+    // }
+
+    public Integer getResidenceCounty() {
+        return country;
+    }
+
+    public void setResidenceCountry(Integer country) {
+        this.country = country;
+    }
+
+    public String getResidenceCity() {
+        return residenceCity;
+    }
+
+    public void setResidenceCity(String residenceCity) {
+        this.residenceCity = residenceCity;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public static Person from(PersonDataInput personData){
+        Person person=new Person();
+
+        person.setFirstname(personData.firstName());
+        person.setLastname(personData.lastName());
+        person.setPhoneNumber(personData.phone());
+        person.setEmail(personData.email());
+        person.setResidenceCountry(personData.country());
+        person.setResidenceCity(personData.city());
+        person.setAddress(personData.address());
+        person.setBirthDate(personData.birthDate());
+
+        return person;
+    }
 }

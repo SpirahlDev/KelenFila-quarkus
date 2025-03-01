@@ -1,0 +1,1 @@
+ALTER TABLE country ADD UNIQUE INDEX unique_country_code (country_code);

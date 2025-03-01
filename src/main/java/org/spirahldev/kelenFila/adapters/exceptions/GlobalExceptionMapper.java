@@ -11,12 +11,15 @@ import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import io.quarkus.logging.Log;
+
 @Provider
-public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
+public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
     
     
     @Override
-    public Response toResponse(Exception exception) {
+    public Response toResponse(Throwable exception) {
+        Log.error(exception);
         Throwable rootCause = getRootCause(exception);
 
         
@@ -29,6 +32,8 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                     ))
                     .build();
             }
+
+
             
             // Pour les autres erreurs de mapping JSON
             return Response
@@ -38,7 +43,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Exception> {
                 ))
                 .build();
         }
-        
+
         // Erreur générique
         return Response
             .status(Response.Status.INTERNAL_SERVER_ERROR)
