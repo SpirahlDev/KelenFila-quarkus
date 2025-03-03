@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 import org.spirahldev.kelenFila.domain.enums.PersonType;
 
-import io.quarkus.security.jpa.Password;
-import io.quarkus.security.jpa.UserDefinition;
-import io.quarkus.security.jpa.Username;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,7 +32,7 @@ public class Account {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "suspended_at")
+    @Column(name = "suspended_at",nullable =true)
     private LocalDateTime suspendedAt;
 
 
@@ -65,6 +62,10 @@ public class Account {
 
     @Column(name="verified_at")
     private LocalDateTime verifiedAt;
+
+    public Long getId(){
+        return this.id;
+    }
 
     public LocalDateTime getVerificationDate() {
         return verifiedAt;

@@ -4,6 +4,7 @@ import org.spirahldev.kelenFila.domain.interfaces.IAccountRepository;
 import org.spirahldev.kelenFila.domain.model.Account;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -17,7 +18,8 @@ public class AccountRepositoryImpl implements PanacheRepository<Account>,IAccoun
 
     @Override
     public Account findAccountByLogin(String login){
-        return find("login = ?1 and isActive=true", login).firstResult();
+        Account account = find("login = ?1 and suspendedAt is null", login).firstResult();        
+        return account;
     }
     
 }

@@ -3,11 +3,13 @@ package org.spirahldev.kelenFila.app.services;
 import java.util.ArrayList;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.logging.Log;
 import io.smallrye.jwt.build.Jwt;
 
 import org.spirahldev.kelenFila.adapters.persistence.repositories.AccountRepositoryImpl;
 import org.spirahldev.kelenFila.app.IOmodel.input.AccountDataInput;
 import org.spirahldev.kelenFila.app.IOmodel.input.UserLoginInput;
+import org.spirahldev.kelenFila.app.interfaces.IAccountService;
 import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.config.AppConfig;
 import org.spirahldev.kelenFila.domain.constants.DomainStatusCode;
@@ -24,7 +26,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
-public class AccountService {
+public class AccountService implements IAccountService{
 
     @Inject
     AccountRepositoryImpl accountRepository;
@@ -82,17 +84,17 @@ public class AccountService {
 
     
     public String authenticate(UserLoginInput loginData){
+
         Account account=getAccountFromLogin(loginData.login());
-        
-        if (!checkPassword(loginData.password(),account.getPassword()) || account==null) {
+
+        if (account==null || !checkPassword(loginData.password(),account.getPassword())) {
             throw new BusinessException(AppStatusCode.INVALID_CREDENTIALS, Response.Status.NOT_FOUND);
         }
 
-
         return Jwt.issuer(appConfig.getIssuer())
-                .subject(account.getLogin())
+                .subject(account.getId().toString())
                 .groups(account.getProfile().getProfileCode()) // Ajoute les rôles de l'utilisateur
-                .expiresAt(System.currentTimeMillis() / 1000 + 3600) // Expiration 1h
+                .expiresAt((System.currentTimeMillis()/1000)*appConfig.getTokenLife()) 
                 .sign();
     }
       

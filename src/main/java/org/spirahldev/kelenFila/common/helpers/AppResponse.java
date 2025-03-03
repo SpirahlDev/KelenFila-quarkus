@@ -93,7 +93,7 @@ public class AppResponse<T> {
     public static Map<String,Object> sendTokken(String token) {
         Map<String, Object> responseMap = new HashMap<String, Object>();
         responseMap.put("token", token);
-        responseMap.put("statusCode", AppStatusCode.SUCCESS_OPERATION);
+        responseMap.put("statusCode", AppStatusCode.SUCCESS_GET_TOKEN.getCode());
         return responseMap;
     }
 

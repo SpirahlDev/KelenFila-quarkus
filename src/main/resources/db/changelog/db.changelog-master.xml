@@ -24,8 +24,16 @@
         <sqlFile path="db/changelog/sql/rename-residence_country-column-person-table.sql" />
     </changeSet>
 
-       <changeSet id="6" author="Anselme Alloue">
+    <changeSet id="6" author="Anselme Alloue">
         <sqlFile path="db/changelog/sql/add_deleted_at_column_to_account_table.sql" />
+    </changeSet>
+
+     <changeSet id="7" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/add-index-to-login-at-account-table.sql" />
+    </changeSet>
+
+    <changeSet id="8" author="Anselme Alloue">
+        <sqlFile path="db/changelog/sql/change-suspended_at-column-at-account-table.sql" />
     </changeSet>
 </databaseChangeLog>
 

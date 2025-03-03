@@ -25,7 +25,7 @@ public class UniqueConstraintExceptionMapper implements ExceptionMapper<Persiste
 
 
         if (exception.getCause() instanceof ConstraintViolationException) {
-            response.setStatusCode(AppStatusCode.RESSOURCE_ALREADY_EXIST);
+            response.setStatusCode(AppStatusCode.RESOURCE_ALREADY_EXIST);
 
             return Response.status(Response.Status.CONFLICT)
                     .entity(response)
