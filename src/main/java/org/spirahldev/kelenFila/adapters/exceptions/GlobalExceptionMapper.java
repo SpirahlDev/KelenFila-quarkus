@@ -2,11 +2,12 @@ package org.spirahldev.kelenFila.adapters.exceptions;
 
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.common.helpers.AppResponse;
 
+import jakarta.ws.rs.NotSupportedException;
 import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -20,20 +21,8 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable exception) {
         Log.error(exception);
-        Throwable rootCause = getRootCause(exception);
-
         
-        if (exception instanceof JsonMappingException) {
-            if (rootCause.getMessage().contains("HV000116")) {
-                return Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity(new AppResponse<>(
-                        AppStatusCode.VALIDATION_ERROR
-                    ))
-                    .build();
-            }
-
-
+        if (exception instanceof JsonMappingException || exception instanceof NotSupportedException || exception instanceof MismatchedInputException) { 
             
             // Pour les autres erreurs de mapping JSON
             return Response
@@ -42,8 +31,8 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
                     AppStatusCode.VALIDATION_ERROR,null
                 ))
                 .build();
-        }
-
+        }  
+        
         // Erreur générique
         return Response
             .status(Response.Status.INTERNAL_SERVER_ERROR)

@@ -21,6 +21,8 @@ public class UniqueConstraintExceptionMapper implements ExceptionMapper<Persiste
 
     @Override
     public Response toResponse(PersistenceException exception) {
+        Log.error(exception);
+
         AppResponse<?> response=new AppResponse<>();
 
 

@@ -4,13 +4,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.spirahldev.kelenFila.app.IOmodel.input.PersonDataInput;
+import org.spirahldev.kelenFila.common.constants.AppStatusCode;
+import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.ws.rs.core.Response;
 
 @Entity
 @Table(name = "person")
@@ -31,8 +36,9 @@ public class Person {
     @Column(length = 200)
     private String email;
 
-    @Column(name = "country_id")
-    private Integer country;
+    @OneToOne
+    @JoinColumn(name="country_id")
+    private CountryEntity country;
 
     @Column(name = "residence_city", length = 45)
     private String residenceCity;
@@ -123,11 +129,11 @@ public class Person {
     //     this.birthDate=personData.birthDate();
     // }
 
-    public Integer getResidenceCounty() {
+    public CountryEntity getResidenceCounty() {
         return country;
     }
 
-    public void setResidenceCountry(Integer country) {
+    public void setResidenceCountry(CountryEntity country) {
         this.country = country;
     }
 
@@ -149,12 +155,18 @@ public class Person {
 
     public static Person from(PersonDataInput personData){
         Person person=new Person();
+        
+        CountryEntity country=CountryEntity.findById(personData.country());
 
+        if(country==null){
+            throw new BusinessException(AppStatusCode.VALIDATION_ERROR,Response.Status.BAD_REQUEST);
+        }
+        
+        person.setResidenceCountry(country);
         person.setFirstname(personData.firstName());
         person.setLastname(personData.lastName());
         person.setPhoneNumber(personData.phone());
         person.setEmail(personData.email());
-        person.setResidenceCountry(personData.country());
         person.setResidenceCity(personData.city());
         person.setAddress(personData.address());
         person.setBirthDate(personData.birthDate());

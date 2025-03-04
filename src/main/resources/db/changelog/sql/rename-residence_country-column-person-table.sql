@@ -1,1 +1,0 @@
-ALTER TABLE person CHANGE COLUMN residence_country country_id INT(11);

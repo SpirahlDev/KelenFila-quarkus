@@ -3,13 +3,22 @@ package org.spirahldev.kelenFila.domain.model;
 import java.time.LocalDateTime;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "country")
-public class CountryEntity extends PanacheEntity {
+public class CountryEntity extends PanacheEntityBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Integer id;  
+    
     @Column(name = "country_name", length = 45)
     private String countryName;
 
@@ -63,7 +72,7 @@ public class CountryEntity extends PanacheEntity {
     public LocalDateTime getDeletedAt() {
         return deletedAt;
     }
-
+ 
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
     }

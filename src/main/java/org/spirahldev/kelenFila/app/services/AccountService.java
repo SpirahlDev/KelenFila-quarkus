@@ -1,9 +1,9 @@
 package org.spirahldev.kelenFila.app.services;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
-import io.quarkus.logging.Log;
 import io.smallrye.jwt.build.Jwt;
 
 import org.spirahldev.kelenFila.adapters.persistence.repositories.AccountRepositoryImpl;
@@ -57,6 +57,7 @@ public class AccountService implements IAccountService{
         
         if(passwordErr.size()>0){ // On verifie si on a au moins un manquement dans le mot de passe
             String[] errorList=new String[passwordErr.size()];
+            
             for(int i=0;i<passwordErr.size();i++){
                 errorList[i]=passwordErr.get(i).getMessage();
             }
@@ -94,11 +95,22 @@ public class AccountService implements IAccountService{
         return Jwt.issuer(appConfig.getIssuer())
                 .subject(account.getId().toString())
                 .groups(account.getProfile().getProfileCode()) // Ajoute les rôles de l'utilisateur
-                .expiresAt((System.currentTimeMillis()/1000)*appConfig.getTokenLife()) 
+                .expiresAt(Instant.now().plusSeconds(appConfig.getTokenLife()).getEpochSecond())
                 .sign();
     }
       
     public Account getAccountFromLogin(String login){
         return accountRepository.findAccountByLogin(login);
+    }
+
+    @Override
+    public Account getAccountFromId(Long accountId) {
+        Account account=accountRepository.findById(accountId);
+        
+        if(account==null){
+            throw new BusinessException(AppStatusCode.USER_NOT_FOUND,Response.Status.NOT_FOUND);
+        }
+
+        return account;
     }
 }

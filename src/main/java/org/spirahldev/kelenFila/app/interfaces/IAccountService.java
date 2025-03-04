@@ -12,4 +12,6 @@ public interface IAccountService {
     public String authenticate(UserLoginInput loginData);
       
     public Account getAccountFromLogin(String login);
+
+    public Account getAccountFromId(Long account_id);
 }

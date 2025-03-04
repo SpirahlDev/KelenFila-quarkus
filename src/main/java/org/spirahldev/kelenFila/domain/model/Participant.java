@@ -14,13 +14,14 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "participant")
 public class Participant {
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private Long id;
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "account_id")
     private Long accountId;
-
+    
+    @Id
     @Column(name = "auction_id")
     private Long auctionId;
 
@@ -34,10 +35,6 @@ public class Participant {
     @Column(name = "has_join_auction")
     private Boolean hasJoinAuction;
 
-    @Column(name = "has_solved_notification")
-    private Boolean hasSolvedNotification;
-
-    @Column(name = "deleted_at",nullable = true)
-    private LocalDateTime deleteAt;
-    // Getters et Setters
+    @Column(name = "has_actived_notification")
+    private Boolean hasActivedNotification;
 }

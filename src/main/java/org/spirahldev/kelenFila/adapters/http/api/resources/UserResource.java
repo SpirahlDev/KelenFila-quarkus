@@ -7,20 +7,24 @@ import org.spirahldev.kelenFila.app.IOmodel.input.AccountDataInput;
 import org.spirahldev.kelenFila.app.IOmodel.input.NaturalPersonRegisterInput;
 import org.spirahldev.kelenFila.app.IOmodel.input.PersonDataInput;
 import org.spirahldev.kelenFila.app.IOmodel.input.UserLoginInput;
+import org.spirahldev.kelenFila.app.IOmodel.output.GetOneDataOutput;
 import org.spirahldev.kelenFila.app.interfaces.IAccountService;
 import org.spirahldev.kelenFila.app.interfaces.IUserService;
 import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.common.helpers.AppResponse;
 import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
+import org.spirahldev.kelenFila.domain.model.Account;
+import org.spirahldev.kelenFila.domain.model.CountryEntity;
 
+import io.quarkus.logging.Log;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 
 @Path("user")
 @ApplicationScoped
@@ -46,41 +50,15 @@ public class UserResource {
          * @return
          */
 
-        try {
-            PersonDataInput personData = requestBody.getPersonData();
-            AccountDataInput accountData = requestBody.getAccountData();
-    
-            userService.createClient(personData, accountData);
-    
-            return Response
-                .status(Response.Status.CREATED)
-                .entity(new AppResponse<>(AppStatusCode.SUCCESS_OPERATION))
-                .build();
-            
-        } catch (BusinessException e) {
-            /**
-             * If the user already exist, userService throws a BusinessException with the status code USER_ALREADY_EXIST
-             * We catch it here and return a 409 CONFLICT response
-             */
-            if(e.getStatusCode().equals(AppStatusCode.USER_ALREADY_EXIST)){
-                return Response.status(Response.Status.CONFLICT)
-                    .entity(new AppResponse<>(AppStatusCode.USER_ALREADY_EXIST))
-                    .build();
-            }
+        PersonDataInput personData = requestBody.getPersonData();
+        AccountDataInput accountData = requestBody.getAccountData();
 
-            if(e.getStatusCode().equals(AppStatusCode.INVALID_PASSWORD)){
-                return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(AppResponse.error(AppStatusCode.INVALID_PASSWORD, e.getErrors()))
-                    .build();
-            }
-
-        }
+        userService.createClient(personData, accountData);
 
         return Response
-            .status(Response.Status.INTERNAL_SERVER_ERROR)
-            .entity(new AppResponse<>(AppStatusCode.INTERNAL_SERVER_ERROR))
+            .status(Response.Status.CREATED)
+            .entity(new AppResponse<>(AppStatusCode.SUCCESS_OPERATION))
             .build();
-
     }
 
     @POST
@@ -106,6 +84,37 @@ public class UserResource {
     public Response login(@Valid UserLoginInput loginRequest){
         return Response.ok().
         entity(AppResponse.sendTokken(accountService.authenticate(loginRequest)))
+        .build();
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("me")
+    @Authenticated
+    public Response getOne(@Context SecurityContext securityContext){
+
+        Long accountId=Long.valueOf(securityContext.getUserPrincipal().getName());
+        Account account=accountService.getAccountFromId(accountId);
+        
+        return Response.ok().
+        entity(new AppResponse<>(
+            AppStatusCode.SUCCESS_OPERATION,
+            GetOneDataOutput.fromAccount(account))
+        ).build();
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("test")
+    @Authenticated
+    public Response test(){
+        CountryEntity country=CountryEntity.findById(1);
+
+        if(country==null){
+            throw new BusinessException(AppStatusCode.VALIDATION_ERROR,Response.Status.BAD_REQUEST);
+        }
+        return Response.ok().
+        entity(new AppResponse<>(AppStatusCode.SUCCESS_OPERATION,country))
         .build();
     }
 

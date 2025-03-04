@@ -40,7 +40,7 @@ public record NaturalPersonRegisterInput(
     int country,
 
     @NotNull(message = "La date de naissance est obligatoire")
-    LocalDate birthDate,
+    LocalDate birthDate, 
 
     String avatar
 ) {

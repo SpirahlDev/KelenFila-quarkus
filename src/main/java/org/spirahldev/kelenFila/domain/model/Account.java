@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.spirahldev.kelenFila.domain.enums.PersonType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,10 +24,10 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(length = 160)
     private String login;
 
+    @JsonIgnore
     @Column(length = 220)
     private String password;
 
@@ -35,7 +37,7 @@ public class Account {
     @Column(name = "suspended_at",nullable =true)
     private LocalDateTime suspendedAt;
 
-
+    @JsonIgnore
     @Column(name = "remember_token", length = 160)
     private String rememberToken;
 
@@ -63,6 +65,10 @@ public class Account {
     @Column(name="verified_at")
     private LocalDateTime verifiedAt;
 
+    // Getters et setters
+
+    // On doit aussi ajouter @JsonIgnore aux getters des champs à cacher
+    
     public Long getId(){
         return this.id;
     }
@@ -87,6 +93,7 @@ public class Account {
         this.login = login;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -99,12 +106,11 @@ public class Account {
         return suspendedAt;
     }
 
-
-
     public void setSuspendedAt(LocalDateTime suspendedAt) {
         this.suspendedAt = suspendedAt;
     }
 
+    @JsonIgnore
     public String getRememberToken() {
         return rememberToken;
     }
@@ -152,6 +158,4 @@ public class Account {
     public void setDeleteAt(LocalDateTime deleteAt) {
         this.deleteAt = deleteAt;
     }
-
-    
 }

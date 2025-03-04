@@ -8,6 +8,7 @@ import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.common.helpers.AppResponse;
 import org.spirahldev.kelenFila.common.helpers.ValidationError;
 
+import io.quarkus.logging.Log;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
@@ -28,6 +29,8 @@ public class FieldValidationExceptionMapper implements ExceptionMapper<Constrain
      */
     @Override
     public Response toResponse(ConstraintViolationException exception) {
+        Log.error(exception);
+
         // Récupération de l'ensemble des violations
         Set<ConstraintViolation<?>> violations = exception.getConstraintViolations();
         

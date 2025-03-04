@@ -1,2 +1,0 @@
-ALTER TABLE account
-MODIFY COLUMN suspended_at TIMESTAMP NULL;

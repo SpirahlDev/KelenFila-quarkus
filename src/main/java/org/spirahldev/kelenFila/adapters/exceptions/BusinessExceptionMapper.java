@@ -3,6 +3,7 @@ package org.spirahldev.kelenFila.adapters.exceptions;
 import org.spirahldev.kelenFila.common.helpers.AppResponse;
 import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
 
+import io.quarkus.logging.Log;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -12,6 +13,8 @@ public class BusinessExceptionMapper implements ExceptionMapper<BusinessExceptio
 
     @Override
     public Response toResponse(BusinessException exception) {
+        Log.error(exception);
+
         AppResponse<?> response=new AppResponse<>(exception.getStatusCode());
 
         if(exception.getMessage()!=null){
