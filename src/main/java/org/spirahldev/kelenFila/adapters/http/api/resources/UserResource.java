@@ -16,7 +16,6 @@ import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
 import org.spirahldev.kelenFila.domain.model.Account;
 import org.spirahldev.kelenFila.domain.model.CountryEntity;
 
-import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

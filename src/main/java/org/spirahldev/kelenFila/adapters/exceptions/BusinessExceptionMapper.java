@@ -21,6 +21,12 @@ public class BusinessExceptionMapper implements ExceptionMapper<BusinessExceptio
             response.setStatusMessage(exception.getMessage());
         }
 
+        if(exception.getErrors().length>0){
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(AppResponse.error(exception.getStatusCode(), exception.getErrors()))
+                .build();
+        }
+
         Response.Status status=exception.getHttpStatusCode()!=null ? exception.getHttpStatusCode() : Response.Status.BAD_REQUEST;
 
         return Response.status(status)

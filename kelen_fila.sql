@@ -1,400 +1,588 @@
--- MySQL Script corrigé pour MySQL 5.5
--- Model: New Model    Version: 1.0
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Hôte : localhost
+-- Généré le : jeu. 06 mars 2025 à 01:34
+-- Version du serveur : 10.4.32-MariaDB
+-- Version de PHP : 8.2.12
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
-
--- -----------------------------------------------------
--- Schema kelen_fila
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `kelen_fila` DEFAULT CHARACTER SET utf8 ;
-USE `kelen_fila` ;
-
-
--- -----------------------------------------------------
--- Table `kelen_fila`.`country`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`country` ;
-
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`country` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `country_name` VARCHAR(45) NOT NULL,
-  `telephone_code` VARCHAR(45) NOT NULL,
-  `country_code` VARCHAR(45) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `updated_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `unique_country_code` (`country_code` ))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`person`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`person` ;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`person` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `lastname` VARCHAR(150) NOT NULL,
-  `firstname` VARCHAR(150) NOT NULL,
-  `phonenumber` VARCHAR(25) NOT NULL,
-  `email` VARCHAR(200) NOT NULL,
-  `country_id` INT(11) NULL DEFAULT NULL,
-  `residence_city` VARCHAR(100) NOT NULL,
-  `address` VARCHAR(100) NOT NULL,
-  `birth_date` DATE NOT NULL,
-  `is_verified` TINYINT(1) NULL DEFAULT 0,
-  `updated_at` TIMESTAMP NULL DEFAULT NULL,
-  `identity_card` VARCHAR(400) NULL DEFAULT NULL,
-  `is_identity_card_checked` TINYINT(1) NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ),
-  INDEX `fk_user_country_idx` (`country_id` ),
-  INDEX `city_index` (`residence_city` ),
-  CONSTRAINT `fk_user_country`
-    FOREIGN KEY (`country_id`)
-    REFERENCES `kelen_fila`.`country` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+--
+-- Base de données : `kelen_fila`
+--
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`profile`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`profile` ;
+--
+-- Structure de la table `account`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`profile` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `profile_code` VARCHAR(45) NOT NULL,
-  `profile_name` VARCHAR(255) NOT NULL,
-  `description` VARCHAR(255) NULL DEFAULT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` DATETIME NULL DEFAULT NULL,
-  `updated_at` DATETIME NULL DEFAULT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `account` (
+  `id` bigint(20) NOT NULL,
+  `login` varchar(160) NOT NULL,
+  `password` varchar(220) NOT NULL,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `suspended_at` timestamp NULL DEFAULT NULL,
+  `remember_token` varchar(160) DEFAULT NULL,
+  `person_type` enum('NATURAL','LEGAL') NOT NULL DEFAULT 'NATURAL',
+  `profile_id` int(11) NOT NULL,
+  `person_id` bigint(20) NOT NULL,
+  `avatar` varchar(455) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`account`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`account` ;
+--
+-- Structure de la table `administrative_document`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`account` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `login` VARCHAR(160) NOT NULL,
-  `password` VARCHAR(220) NOT NULL,
-  `verified_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `suspended_at` TIMESTAMP NULL DEFAULT NULL,
-  `remember_token` VARCHAR(160) NULL DEFAULT NULL,
-  `person_type` ENUM('NATURAL', 'LEGAL') NOT NULL DEFAULT 'NATURAL',
-  `profile_id` INT(11) NOT NULL,
-  `person_id` BIGINT(20) NOT NULL,
-  `avatar` VARCHAR(455) NULL DEFAULT NULL,
-  `updated_at` TIMESTAMP NULL DEFAULT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_account_profile_idx` (`profile_id` ),
-  INDEX `fk_account_user_idx` (`person_id` ),
-  INDEX `idx_login` (`login` ),
-  CONSTRAINT `fk_account_person`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `kelen_fila`.`person` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_account_profile`
-    FOREIGN KEY (`profile_id`)
-    REFERENCES `kelen_fila`.`profile` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `administrative_document` (
+  `id` bigint(20) NOT NULL,
+  `account_id` bigint(20) NOT NULL,
+  `administrative_doc_type` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`administrative_document_type`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`administrative_document_type` ;
+--
+-- Structure de la table `administrative_document_type`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`administrative_document_type` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `code` VARCHAR(200) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `code_UNIQUE` (`code` ))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `administrative_document_type` (
+  `id` int(11) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `code` varchar(200) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`administrative_document`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`administrative_document` ;
+--
+-- Structure de la table `article`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`administrative_document` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `account_id` BIGINT(20) NOT NULL,
-  `administrative_doc_type` INT(11) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_administrative_document_doc_type_idx` (`administrative_doc_type` ),
-  INDEX `fk_administrative_document_moral_person_idx` (`account_id` ),
-  CONSTRAINT `fk_administrative_document_doc_type`
-    FOREIGN KEY (`administrative_doc_type`)
-    REFERENCES `kelen_fila`.`administrative_document_type` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_administrative_document_moral_person`
-    FOREIGN KEY (`account_id`)
-    REFERENCES `kelen_fila`.`account` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `article` (
+  `id` bigint(20) NOT NULL,
+  `item_identifier` varchar(100) NOT NULL,
+  `article_name` varchar(100) NOT NULL,
+  `article_description` text NOT NULL,
+  `article_state` enum('EXCELENT','GOOD','MID','BAD') NOT NULL,
+  `article_state_description` varchar(200) DEFAULT NULL,
+  `article_base_price` double NOT NULL,
+  `image1` varchar(400) NOT NULL,
+  `image2` varchar(400) NOT NULL,
+  `image3` varchar(400) NOT NULL,
+  `image4` varchar(400) NOT NULL,
+  `image5` varchar(400) DEFAULT NULL,
+  `image6` varchar(400) DEFAULT NULL,
+  `awarded_at` datetime DEFAULT NULL,
+  `awarded_price` double DEFAULT NULL,
+  `category_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`category`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`category` ;
+--
+-- Structure de la table `auction`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`category` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `category_name` VARCHAR(100) NOT NULL,
-  `category_illustration_image` VARCHAR(400) NULL DEFAULT NULL,
-  `description` TEXT NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `designCategorie_UNIQUE` (`category_name` ))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `auction` (
+  `id` bigint(20) NOT NULL,
+  `auction_code` varchar(100) NOT NULL,
+  `owner_account_id` bigint(20) NOT NULL,
+  `title` varchar(100) DEFAULT NULL,
+  `description` varchar(400) DEFAULT NULL,
+  `cover_image` varchar(400) DEFAULT NULL,
+  `date` datetime NOT NULL,
+  `time_took` time DEFAULT NULL COMMENT 'The time the auction took',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`article`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`article` ;
+--
+-- Structure de la table `bid_collection`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`article` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `article_name` VARCHAR(100) NOT NULL,
-  `article_description` TEXT NOT NULL,
-  `article_state` VARCHAR(150) NOT NULL,
-  `article_base_price` DOUBLE NOT NULL,
-  `item_number` INT(11) NOT NULL,
-  `image1` VARCHAR(400) NOT NULL,
-  `image2` VARCHAR(400) NOT NULL,
-  `image3` VARCHAR(400) NOT NULL,
-  `image4` VARCHAR(400) NOT NULL,
-  `image5` VARCHAR(400) NULL DEFAULT NULL,
-  `image6` VARCHAR(400) NULL DEFAULT NULL,
-  `adjudication_datetime` DATETIME NULL DEFAULT NULL,
-  `awarded_price` DOUBLE NULL DEFAULT NULL,
-  `category_id` INT(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_lot_category_idx` (`category_id` ),
-  CONSTRAINT `fk_lot_category`
-    FOREIGN KEY (`category_id`)
-    REFERENCES `kelen_fila`.`category` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `bid_collection` (
+  `id` bigint(20) NOT NULL,
+  `collection_number` int(11) NOT NULL DEFAULT 1,
+  `name` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `description` varchar(400) DEFAULT NULL,
+  `auction_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`bid_collection`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`bid_collection` ;
+--
+-- Structure de la table `category`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`bid_collection` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `preview_img` VARCHAR(400) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `description` VARCHAR(400) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `category` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `preview_image` varchar(400) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`auction`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`auction` ;
+--
+-- Structure de la table `collection_article`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`auction` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `auction_code` VARCHAR(100) NOT NULL,
-  `auction_date` DATETIME NOT NULL,
-  `estimated_time` DATETIME NULL DEFAULT NULL,
-  `account_owner_id` BIGINT(20) NOT NULL,
-  `auction_add_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `auction_duration` DATETIME NULL DEFAULT NULL,
-  `auction_description` VARCHAR(400) NULL DEFAULT NULL,
-  `auction_title` VARCHAR(100) NULL DEFAULT NULL,
-  `bid_collection_id` BIGINT(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `numEnchere_UNIQUE` (`auction_code` ),
-  INDEX `FK_ENCHERE_VENDEUR_idx` (`account_owner_id` ),
-  INDEX `fk_auction_bid_collection_idx` (`bid_collection_id` ),
-  CONSTRAINT `FK_ENCHERE_VENDEUR`
-    FOREIGN KEY (`account_owner_id`)
-    REFERENCES `kelen_fila`.`account` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_auction_bid_collection`
-    FOREIGN KEY (`bid_collection_id`)
-    REFERENCES `kelen_fila`.`bid_collection` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `collection_article` (
+  `bid_collection_id` bigint(20) NOT NULL,
+  `article_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`collection_article`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`collection_article` ;
+--
+-- Structure de la table `country`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`collection_article` (
-  `bid_collection_id` BIGINT(20) NOT NULL,
-  `article_id` BIGINT(20) NOT NULL,
-  INDEX `fk_bid_collection_article_idx` (`bid_collection_id` ),
-  INDEX `fk_collection_article_article_idx` (`article_id` ),
-  CONSTRAINT `fk_bid_collection_article`
-    FOREIGN KEY (`bid_collection_id`)
-    REFERENCES `kelen_fila`.`bid_collection` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_collection_article_article`
-    FOREIGN KEY (`article_id`)
-    REFERENCES `kelen_fila`.`article` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `country` (
+  `id` int(11) NOT NULL,
+  `country_name` varchar(45) NOT NULL,
+  `telephone_code` varchar(45) NOT NULL,
+  `country_code` varchar(45) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`moral_person_type`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`moral_person_type` ;
+--
+-- Structure de la table `DATABASECHANGELOG`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`moral_person_type` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `code` VARCHAR(45) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `code_UNIQUE` (`code` ),
-  UNIQUE INDEX `name_UNIQUE` (`name` ))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `DATABASECHANGELOG` (
+  `ID` varchar(255) NOT NULL,
+  `AUTHOR` varchar(255) NOT NULL,
+  `FILENAME` varchar(255) NOT NULL,
+  `DATEEXECUTED` datetime NOT NULL,
+  `ORDEREXECUTED` int(11) NOT NULL,
+  `EXECTYPE` varchar(10) NOT NULL,
+  `MD5SUM` varchar(35) DEFAULT NULL,
+  `DESCRIPTION` varchar(255) DEFAULT NULL,
+  `COMMENTS` varchar(255) DEFAULT NULL,
+  `TAG` varchar(255) DEFAULT NULL,
+  `LIQUIBASE` varchar(20) DEFAULT NULL,
+  `CONTEXTS` varchar(255) DEFAULT NULL,
+  `LABELS` varchar(255) DEFAULT NULL,
+  `DEPLOYMENT_ID` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`moral_person`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`moral_person` ;
+--
+-- Structure de la table `DATABASECHANGELOGLOCK`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`moral_person` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `city` VARCHAR(200) NOT NULL,
-  `country_id` INT(11) NOT NULL,
-  `moral_person_type_id` INT(11) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `account_id` BIGINT(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_moral_person_type_idx` (`moral_person_type_id` ),
-  INDEX `fk_moral_person_account_idx` (`account_id` ),
-  INDEX `fk_moral_person_country_idx` (`country_id` ),
-  CONSTRAINT `fk_moral_person_account`
-    FOREIGN KEY (`account_id`)
-    REFERENCES `kelen_fila`.`account` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_moral_person_country`
-    FOREIGN KEY (`country_id`)
-    REFERENCES `kelen_fila`.`country` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_moral_person_type`
-    FOREIGN KEY (`moral_person_type_id`)
-    REFERENCES `kelen_fila`.`moral_person_type` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `DATABASECHANGELOGLOCK` (
+  `ID` int(11) NOT NULL,
+  `LOCKED` tinyint(1) NOT NULL,
+  `LOCKGRANTED` datetime DEFAULT NULL,
+  `LOCKEDBY` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`participant_role`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`participant_role` ;
+--
+-- Structure de la table `moral_person`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`participant_role` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `label` VARCHAR(45) NOT NULL,
-  `code` VARCHAR(45) NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `code_UNIQUE` (`code` ))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `moral_person` (
+  `id` bigint(20) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `city` varchar(200) NOT NULL,
+  `country_id` int(11) NOT NULL,
+  `moral_person_type_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `account_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Table `kelen_fila`.`participant`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `kelen_fila`.`participant` ;
+--
+-- Structure de la table `moral_person_type`
+--
 
-CREATE TABLE IF NOT EXISTS `kelen_fila`.`participant` (
-  `account_id` BIGINT(20) NOT NULL,
-  `auction_id` BIGINT(20) NOT NULL,
-  `participant_role_id` BIGINT(20) NOT NULL,
-  `registration_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `has_join_auction` TINYINT(1) NULL DEFAULT 0,
-  `has_actived_notification` TINYINT(1) NULL DEFAULT 0,
-  INDEX `fk_user_has_enchere_enchere1_idx` (`auction_id` ),
-  INDEX `fk_user_has_enchere_user1_idx` (`account_id` ),
-  INDEX `fk_participant_role_idx` (`participant_role_id` ),
-  CONSTRAINT `fk_participant_role`
-    FOREIGN KEY (`participant_role_id`)
-    REFERENCES `kelen_fila`.`participant_role` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_has_enchere_enchere1`
-    FOREIGN KEY (`auction_id`)
-    REFERENCES `kelen_fila`.`auction` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_has_enchere_user1`
-    FOREIGN KEY (`account_id`)
-    REFERENCES `kelen_fila`.`account` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
+CREATE TABLE `moral_person_type` (
+  `id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `code` varchar(45) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+--
+-- Structure de la table `participant`
+--
+
+CREATE TABLE `participant` (
+  `account_id` bigint(20) NOT NULL,
+  `auction_id` bigint(20) NOT NULL,
+  `participant_role_id` bigint(20) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `has_join_auction` tinyint(1) DEFAULT 0,
+  `has_actived_notification` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `participant_role`
+--
+
+CREATE TABLE `participant_role` (
+  `id` bigint(20) NOT NULL,
+  `label` varchar(45) NOT NULL,
+  `code` varchar(45) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `person`
+--
+
+CREATE TABLE `person` (
+  `id` bigint(20) NOT NULL,
+  `lastname` varchar(150) NOT NULL,
+  `firstname` varchar(150) NOT NULL,
+  `phonenumber` varchar(25) NOT NULL,
+  `email` varchar(200) NOT NULL,
+  `country_id` int(11) DEFAULT NULL,
+  `residence_city` varchar(100) NOT NULL,
+  `address` varchar(100) NOT NULL,
+  `birth_date` date NOT NULL,
+  `is_verified` tinyint(1) DEFAULT 0,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `identity_card` varchar(400) DEFAULT NULL,
+  `is_identity_card_checked` tinyint(1) DEFAULT 0,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `profile`
+--
+
+CREATE TABLE `profile` (
+  `id` int(11) NOT NULL,
+  `profile_code` varchar(45) NOT NULL,
+  `profile_name` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Index pour les tables déchargées
+--
+
+--
+-- Index pour la table `account`
+--
+ALTER TABLE `account`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_account_profile_idx` (`profile_id`),
+  ADD KEY `fk_account_user_idx` (`person_id`),
+  ADD KEY `idx_login` (`login`);
+
+--
+-- Index pour la table `administrative_document`
+--
+ALTER TABLE `administrative_document`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_administrative_document_doc_type_idx` (`administrative_doc_type`),
+  ADD KEY `fk_administrative_document_moral_person_idx` (`account_id`);
+
+--
+-- Index pour la table `administrative_document_type`
+--
+ALTER TABLE `administrative_document_type`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code_UNIQUE` (`code`);
+
+--
+-- Index pour la table `article`
+--
+ALTER TABLE `article`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_lot_category_idx` (`category_id`);
+
+--
+-- Index pour la table `auction`
+--
+ALTER TABLE `auction`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `numEnchere_UNIQUE` (`auction_code`),
+  ADD KEY `FK_ENCHERE_VENDEUR_idx` (`owner_account_id`);
+
+--
+-- Index pour la table `bid_collection`
+--
+ALTER TABLE `bid_collection`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `bid_collection_auction_FK` (`auction_id`);
+
+--
+-- Index pour la table `category`
+--
+ALTER TABLE `category`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `designCategorie_UNIQUE` (`name`);
+
+--
+-- Index pour la table `collection_article`
+--
+ALTER TABLE `collection_article`
+  ADD KEY `fk_bid_collection_article_idx` (`bid_collection_id`),
+  ADD KEY `fk_collection_article_article_idx` (`article_id`);
+
+--
+-- Index pour la table `country`
+--
+ALTER TABLE `country`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_country_code` (`country_code`);
+
+--
+-- Index pour la table `DATABASECHANGELOGLOCK`
+--
+ALTER TABLE `DATABASECHANGELOGLOCK`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Index pour la table `moral_person`
+--
+ALTER TABLE `moral_person`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_moral_person_type_idx` (`moral_person_type_id`),
+  ADD KEY `fk_moral_person_account_idx` (`account_id`),
+  ADD KEY `fk_moral_person_country_idx` (`country_id`);
+
+--
+-- Index pour la table `moral_person_type`
+--
+ALTER TABLE `moral_person_type`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code_UNIQUE` (`code`),
+  ADD UNIQUE KEY `name_UNIQUE` (`name`);
+
+--
+-- Index pour la table `participant`
+--
+ALTER TABLE `participant`
+  ADD KEY `fk_user_has_enchere_enchere1_idx` (`auction_id`),
+  ADD KEY `fk_user_has_enchere_user1_idx` (`account_id`),
+  ADD KEY `fk_participant_role_idx` (`participant_role_id`);
+
+--
+-- Index pour la table `participant_role`
+--
+ALTER TABLE `participant_role`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code_UNIQUE` (`code`);
+
+--
+-- Index pour la table `person`
+--
+ALTER TABLE `person`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email_UNIQUE` (`email`),
+  ADD KEY `fk_user_country_idx` (`country_id`),
+  ADD KEY `city_index` (`residence_city`);
+
+--
+-- Index pour la table `profile`
+--
+ALTER TABLE `profile`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT pour les tables déchargées
+--
+
+--
+-- AUTO_INCREMENT pour la table `account`
+--
+ALTER TABLE `account`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `administrative_document`
+--
+ALTER TABLE `administrative_document`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `administrative_document_type`
+--
+ALTER TABLE `administrative_document_type`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `article`
+--
+ALTER TABLE `article`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `auction`
+--
+ALTER TABLE `auction`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `bid_collection`
+--
+ALTER TABLE `bid_collection`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `category`
+--
+ALTER TABLE `category`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `country`
+--
+ALTER TABLE `country`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `moral_person`
+--
+ALTER TABLE `moral_person`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `moral_person_type`
+--
+ALTER TABLE `moral_person_type`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `participant_role`
+--
+ALTER TABLE `participant_role`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `person`
+--
+ALTER TABLE `person`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `profile`
+--
+ALTER TABLE `profile`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Contraintes pour les tables déchargées
+--
+
+--
+-- Contraintes pour la table `account`
+--
+ALTER TABLE `account`
+  ADD CONSTRAINT `fk_account_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_account_profile` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Contraintes pour la table `administrative_document`
+--
+ALTER TABLE `administrative_document`
+  ADD CONSTRAINT `fk_administrative_document_doc_type` FOREIGN KEY (`administrative_doc_type`) REFERENCES `administrative_document_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_administrative_document_moral_person` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `article`
+--
+ALTER TABLE `article`
+  ADD CONSTRAINT `fk_lot_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Contraintes pour la table `auction`
+--
+ALTER TABLE `auction`
+  ADD CONSTRAINT `FK_ENCHERE_VENDEUR` FOREIGN KEY (`owner_account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `bid_collection`
+--
+ALTER TABLE `bid_collection`
+  ADD CONSTRAINT `bid_collection_auction_FK` FOREIGN KEY (`auction_id`) REFERENCES `auction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `collection_article`
+--
+ALTER TABLE `collection_article`
+  ADD CONSTRAINT `fk_bid_collection_article` FOREIGN KEY (`bid_collection_id`) REFERENCES `bid_collection` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_collection_article_article` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `moral_person`
+--
+ALTER TABLE `moral_person`
+  ADD CONSTRAINT `fk_moral_person_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_moral_person_country` FOREIGN KEY (`country_id`) REFERENCES `country` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_moral_person_type` FOREIGN KEY (`moral_person_type_id`) REFERENCES `moral_person_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Contraintes pour la table `participant`
+--
+ALTER TABLE `participant`
+  ADD CONSTRAINT `fk_participant_role` FOREIGN KEY (`participant_role_id`) REFERENCES `participant_role` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_user_has_enchere_enchere1` FOREIGN KEY (`auction_id`) REFERENCES `auction` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_user_has_enchere_user1` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `person`
+--
+ALTER TABLE `person`
+  ADD CONSTRAINT `fk_user_country` FOREIGN KEY (`country_id`) REFERENCES `country` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

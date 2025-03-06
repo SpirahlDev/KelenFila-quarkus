@@ -4,33 +4,34 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "participant")
+@IdClass(ParticipantId.class)
 public class Participant {
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // private Long id;
     
     @Id
-    @Column(name = "account_id")
-    private Long accountId;
-    
+    @ManyToOne
+    @JoinColumn(name = "account_id")  
+    private Account account;
+
     @Id
-    @Column(name = "auction_id")
-    private Long auctionId;
+    @ManyToOne
+    @JoinColumn(name = "auction_id")
+    private Auction auction;
 
     @OneToOne
     @JoinColumn(name = "participant_role_id",nullable = false)
     private ParticipantRole participantRole;
 
-    @Column(name = "registration_date")
-    private LocalDateTime registrationDate;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "has_join_auction")
     private Boolean hasJoinAuction;

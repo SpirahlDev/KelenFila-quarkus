@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : mar. 04 mars 2025 à 13:16
+-- Généré le : jeu. 06 mars 2025 à 01:34
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -79,20 +79,23 @@ CREATE TABLE `administrative_document_type` (
 
 CREATE TABLE `article` (
   `id` bigint(20) NOT NULL,
+  `item_identifier` varchar(100) NOT NULL,
   `article_name` varchar(100) NOT NULL,
   `article_description` text NOT NULL,
-  `article_state` varchar(150) NOT NULL,
+  `article_state` enum('EXCELENT','GOOD','MID','BAD') NOT NULL,
+  `article_state_description` varchar(200) DEFAULT NULL,
   `article_base_price` double NOT NULL,
-  `item_number` int(11) NOT NULL,
   `image1` varchar(400) NOT NULL,
   `image2` varchar(400) NOT NULL,
   `image3` varchar(400) NOT NULL,
   `image4` varchar(400) NOT NULL,
   `image5` varchar(400) DEFAULT NULL,
   `image6` varchar(400) DEFAULT NULL,
-  `adjudication_datetime` datetime DEFAULT NULL,
+  `awarded_at` datetime DEFAULT NULL,
   `awarded_price` double DEFAULT NULL,
-  `category_id` int(11) NOT NULL
+  `category_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -104,14 +107,14 @@ CREATE TABLE `article` (
 CREATE TABLE `auction` (
   `id` bigint(20) NOT NULL,
   `auction_code` varchar(100) NOT NULL,
-  `auction_date` datetime NOT NULL,
-  `estimated_time` datetime DEFAULT NULL,
-  `account_owner_id` bigint(20) NOT NULL,
-  `auction_add_date` timestamp NULL DEFAULT current_timestamp(),
-  `auction_duration` datetime DEFAULT NULL,
-  `auction_description` varchar(400) DEFAULT NULL,
-  `auction_title` varchar(100) DEFAULT NULL,
-  `bid_collection_id` bigint(20) NOT NULL
+  `owner_account_id` bigint(20) NOT NULL,
+  `title` varchar(100) DEFAULT NULL,
+  `description` varchar(400) DEFAULT NULL,
+  `cover_image` varchar(400) DEFAULT NULL,
+  `date` datetime NOT NULL,
+  `time_took` time DEFAULT NULL COMMENT 'The time the auction took',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -122,11 +125,12 @@ CREATE TABLE `auction` (
 
 CREATE TABLE `bid_collection` (
   `id` bigint(20) NOT NULL,
+  `collection_number` int(11) NOT NULL DEFAULT 1,
   `name` varchar(100) NOT NULL,
-  `preview_img` varchar(400) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `description` varchar(400) DEFAULT NULL
+  `description` varchar(400) DEFAULT NULL,
+  `auction_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -137,10 +141,11 @@ CREATE TABLE `bid_collection` (
 
 CREATE TABLE `category` (
   `id` int(11) NOT NULL,
-  `category_name` varchar(100) NOT NULL,
-  `category_illustration_image` varchar(400) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `preview_image` varchar(400) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -170,6 +175,8 @@ CREATE TABLE `country` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `DATABASECHANGELOG`
 --
@@ -191,6 +198,8 @@ CREATE TABLE `DATABASECHANGELOG` (
   `DEPLOYMENT_ID` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Structure de la table `DATABASECHANGELOGLOCK`
 --
@@ -201,13 +210,6 @@ CREATE TABLE `DATABASECHANGELOGLOCK` (
   `LOCKGRANTED` datetime DEFAULT NULL,
   `LOCKEDBY` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Déchargement des données de la table `DATABASECHANGELOGLOCK`
---
-
-INSERT INTO `DATABASECHANGELOGLOCK` (`ID`, `LOCKED`, `LOCKGRANTED`, `LOCKEDBY`) VALUES
-(1, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -250,7 +252,7 @@ CREATE TABLE `participant` (
   `account_id` bigint(20) NOT NULL,
   `auction_id` bigint(20) NOT NULL,
   `participant_role_id` bigint(20) NOT NULL,
-  `registration_date` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
   `has_join_auction` tinyint(1) DEFAULT 0,
   `has_actived_notification` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -309,8 +311,6 @@ CREATE TABLE `profile` (
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
-
-
 --
 -- Index pour les tables déchargées
 --
@@ -352,21 +352,21 @@ ALTER TABLE `article`
 ALTER TABLE `auction`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `numEnchere_UNIQUE` (`auction_code`),
-  ADD KEY `FK_ENCHERE_VENDEUR_idx` (`account_owner_id`),
-  ADD KEY `fk_auction_bid_collection_idx` (`bid_collection_id`);
+  ADD KEY `FK_ENCHERE_VENDEUR_idx` (`owner_account_id`);
 
 --
 -- Index pour la table `bid_collection`
 --
 ALTER TABLE `bid_collection`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `bid_collection_auction_FK` (`auction_id`);
 
 --
 -- Index pour la table `category`
 --
 ALTER TABLE `category`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `designCategorie_UNIQUE` (`category_name`);
+  ADD UNIQUE KEY `designCategorie_UNIQUE` (`name`);
 
 --
 -- Index pour la table `collection_article`
@@ -485,7 +485,7 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT pour la table `country`
 --
 ALTER TABLE `country`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `moral_person`
@@ -515,7 +515,7 @@ ALTER TABLE `person`
 -- AUTO_INCREMENT pour la table `profile`
 --
 ALTER TABLE `profile`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Contraintes pour les tables déchargées
@@ -545,8 +545,13 @@ ALTER TABLE `article`
 -- Contraintes pour la table `auction`
 --
 ALTER TABLE `auction`
-  ADD CONSTRAINT `FK_ENCHERE_VENDEUR` FOREIGN KEY (`account_owner_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_auction_bid_collection` FOREIGN KEY (`bid_collection_id`) REFERENCES `bid_collection` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `FK_ENCHERE_VENDEUR` FOREIGN KEY (`owner_account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `bid_collection`
+--
+ALTER TABLE `bid_collection`
+  ADD CONSTRAINT `bid_collection_auction_FK` FOREIGN KEY (`auction_id`) REFERENCES `auction` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Contraintes pour la table `collection_article`

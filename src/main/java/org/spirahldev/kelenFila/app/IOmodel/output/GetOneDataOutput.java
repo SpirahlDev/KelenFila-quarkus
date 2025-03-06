@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import org.spirahldev.kelenFila.domain.enums.PersonType;
 import org.spirahldev.kelenFila.domain.model.Account;
-import org.spirahldev.kelenFila.domain.model.Person;
-import org.spirahldev.kelenFila.domain.model.ProfileEntity;
 
 public record GetOneDataOutput(
     Long id,

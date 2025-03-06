@@ -61,6 +61,7 @@ public class AccountService implements IAccountService{
             for(int i=0;i<passwordErr.size();i++){
                 errorList[i]=passwordErr.get(i).getMessage();
             }
+            
             throw new BusinessException(AppStatusCode.INVALID_PASSWORD, null, null)
                 .setErrors(errorList);
         }
