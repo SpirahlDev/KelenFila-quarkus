@@ -1,6 +1,7 @@
 package org.spirahldev.kelenFila.adapters.http.api.resources;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.spirahldev.kelenFila.app.IOmodel.input.AuctionInput;
@@ -9,6 +10,7 @@ import org.spirahldev.kelenFila.app.interfaces.IAccountService;
 import org.spirahldev.kelenFila.app.interfaces.IAuctionService;
 import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.common.helpers.AppResponse;
+import org.spirahldev.kelenFila.common.helpers.PaginationInfo;
 import org.spirahldev.kelenFila.common.helpers.QueryParamsHandler;
 import org.spirahldev.kelenFila.domain.interfaces.repositories.IAuctionRepository;
 import org.spirahldev.kelenFila.domain.model.Account;
@@ -40,7 +42,7 @@ public class AuctionResource {
     IAccountService accountService;
 
     @Inject
-    IAuctionRepository auctionRepo; /**@AuctionRepositoryImpl */
+    IAuctionRepository auctionRepository; /**@AuctionRepositoryImpl */
 
 
     @POST
@@ -65,36 +67,30 @@ public class AuctionResource {
     @GET
     @Path("/")
     @Produces("application/json")
-    public Response getAuctions(@Context UriInfo uriInfo){
+    public Response getAuctions(@Context UriInfo uriInfo) {
+        Set<String> allowedFilters = Set.of("auctionCode","date");
 
-        Set<String> allowedFilters = Set.of("auctionCode");
+        Set<String> allowedSearchFields = Set.of("auctionCode","title","description");
+
+        Set<String> allowedSortFields = Set.of("createdAt");
         
-        Set<String> allowedSortField = Set.of("createdAt");
+        // Créer le handler avec la classe d'entité
+        QueryParamsHandler<Auction> handler = new QueryParamsHandler<>(
+            auctionRepository.findAll(), 
+            uriInfo, 
+            allowedFilters,
+            allowedSortFields,
+            allowedSearchFields,
+            Auction.class
+        ).withRepository(auctionRepository)
+        .handle();
         
-        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        List<Auction> auctionList = handler.paginate();
+        PaginationInfo paginationInfo = handler.getPaginationInfo();
         
-        QueryParamsHandler<Auction> handler=null;
-        PanacheQuery<Auction> query=auctionRepo.findAll();
-
-
-        if (queryParams.containsKey("sort")) {
-            String order = queryParams.getFirst("order");
-
-            Sort sanitizedSort=QueryParamsHandler.getSort(queryParams.getFirst("sort"), order, allowedSortField);
-
-            query=auctionRepo.getAllQuery(sanitizedSort);
-        }
-
-        handler=new QueryParamsHandler<Auction>(query, uriInfo, allowedFilters,allowedSortField,null);
-
-
-        List <Auction> auctionList=handler.handle().paginate();
-
-        
-
-
-        return Response.ok()
-        .entity(AppResponse.paginated(AppStatusCode.SUCCESS_OPERATION, auctionList,handler.getPaginationInfo() ))
-        .build();
+        return Response.ok(Map.of(
+            "data", auctionList,
+            "pagination", paginationInfo.toMap()
+        )).build();
     }
 }

@@ -1,23 +1,31 @@
 package org.spirahldev.kelenFila.common.helpers;
 
 
+/**
+ * Gestionnaire avancé de paramètres de requête API pour Quarkus
+ * Permet la recherche, le filtrage complexe, le tri et la pagination
+ * des résultats de requêtes Panache.
+ *
+ * @param <T> Type d'entité sur laquelle s'applique la requête
+ */
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.cache.CacheResult;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Parameters;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriInfo;
-import io.quarkus.panache.common.Sort;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -50,64 +58,99 @@ public class QueryParamsHandler<T> {
     private int paramCounter = 0;
     private boolean useCache = false;
     private String cacheKey;
+    private Sort sort;
+    private Class<T> entityClass;
+
+    private PanacheRepository<T> repository;
     
-    @Inject
-    ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Constructeur de base
-     *
-     * @param query Instance de PanacheQuery à manipuler
-     * @param uriInfo Informations de l'URI de la requête
-     * @param allowedFilters Champs autorisés pour le filtrage
-     */
-    public QueryParamsHandler(PanacheQuery<T> query, UriInfo uriInfo, Set<String> allowedFilters) {
-        this(query, uriInfo, allowedFilters, new HashSet<>(), Set.of("title", "description"));
-    }
-
-  
-
-    /**
-     * Constructeur complet
-     *
-     * @param query Instance de PanacheQuery à manipuler
-     * @param uriInfo Informations de l'URI de la requête
-     * @param allowedFilters Champs autorisés pour le filtrage
-     * @param allowedSortFields Champs autorisés pour le tri (si vide, tous les champs sont autorisés)
-     * @param searchFields Champs sur lesquels la recherche sera effectuée
+     * Constructeur complet avec classe d'entité
      */
     public QueryParamsHandler(
-        PanacheQuery<T> query,
-        UriInfo uriInfo,
-        Set<String> allowedFilters,
-        Set<String> allowedSortFields,
-        Set<String> searchFields
+            PanacheQuery<T> query,
+            UriInfo uriInfo,
+            Set<String> allowedFilters,
+            Set<String> allowedSortFields,
+            Set<String> searchFields,
+            Class<T> entityClass
     ){
-
         this.query = query;
         this.uriInfo = uriInfo;
-        this.allowedFilters = validateFieldNames(allowedFilters);
-        this.allowedSortFields = validateFieldNames(allowedSortFields);
-        this.searchFields = validateFieldNames(searchFields);
+        this.allowedFilters = validateFieldNames(allowedFilters != null ? allowedFilters : new HashSet<>());
+        this.allowedSortFields = validateFieldNames(allowedSortFields != null ? allowedSortFields : new HashSet<>());
+        this.searchFields = validateFieldNames(searchFields != null ? searchFields : Set.of("title", "description"));
+        this.entityClass = entityClass;
         
-        if (this.searchFields.isEmpty()) {
-            LOG.warn("Aucun champ de recherche défini. La fonctionnalité de recherche sera désactivée.");
+        // Récupérer et configurer le tri immédiatement
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        String sortField = queryParams.getFirst("sort");
+        String sortOrder = queryParams.getFirst("order");
+        
+        if (sortField != null && !sortField.trim().isEmpty() && !allowedSortFields.isEmpty()) {
+            this.sort = getSort(sortField, sortOrder, this.allowedSortFields);
         }
+
+        System.out.println(objectMapper);
+    }
+
+    
+    public QueryParamsHandler(
+            PanacheRepository<T> repository,
+            UriInfo uriInfo,
+            Set<String> allowedFilters,
+            Set<String> allowedSortFields,
+            Set<String> searchFields,
+            Class<T> entityClass
+    ){
+        this.repository=repository;
+        this.uriInfo = uriInfo;
+        this.allowedFilters = validateFieldNames(allowedFilters != null ? allowedFilters : new HashSet<>());
+        this.allowedSortFields = validateFieldNames(allowedSortFields != null ? allowedSortFields : new HashSet<>());
+        this.searchFields = validateFieldNames(searchFields != null ? searchFields : Set.of("title", "description"));
+        this.entityClass = entityClass;
+        
+        // Récupérer et configurer le tri immédiatement
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        String sortField = queryParams.getFirst("sort");
+        String sortOrder = queryParams.getFirst("order");
+        
+        if (sortField != null && !sortField.trim().isEmpty() && !allowedSortFields.isEmpty()) {
+            this.sort = getSort(sortField, sortOrder, this.allowedSortFields);
+        }
+
+        System.out.println(objectMapper);
+    }
+    
+    /**
+     * Constructeur simplifié
+     */
+    public QueryParamsHandler(
+            PanacheQuery<T> query,
+            UriInfo uriInfo,
+            Set<String> allowedFilters,
+            Class<T> entityClass) {
+        this(query, uriInfo, allowedFilters, new HashSet<>(), Set.of("title", "description"), entityClass);
+    }
+
+    public QueryParamsHandler(
+            PanacheRepository<T> repository,
+            UriInfo uriInfo,
+            Set<String> allowedFilters,
+            Class<T> entityClass) {
+        
+        this(repository, uriInfo, allowedFilters, new HashSet<>(), Set.of("title", "description"), entityClass);
+            
     }
 
     /**
      * Vérifie que les noms de champs sont sécurisés
-     *
-     * @param fieldNames Ensemble de noms de champs à valider
-     * @return Ensemble validé
      */
     private Set<String> validateFieldNames(Set<String> fieldNames) {
-        if (fieldNames == null) return new HashSet<>();
-        
         return fieldNames.stream()
                 .filter(field -> {
                     boolean isValid = VALID_FIELD_PATTERN.matcher(field).matches();
-
                     if (!isValid) {
                         LOG.warn("Nom de champ invalide ignoré: " + field);
                     }
@@ -118,9 +161,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Définit la limite par défaut pour la pagination
-     *
-     * @param defaultLimit Limite par défaut
-     * @return this pour chaînage
      */
     public QueryParamsHandler<T> withDefaultLimit(int defaultLimit) {
         this.defaultLimit = defaultLimit;
@@ -129,9 +169,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Définit la limite maximale pour la pagination
-     *
-     * @param maxLimit Limite maximale
-     * @return this pour chaînage
      */
     public QueryParamsHandler<T> withMaxLimit(int maxLimit) {
         this.maxLimit = maxLimit;
@@ -140,9 +177,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Active la mise en cache des résultats
-     *
-     * @param cacheKey Clé de cache à utiliser
-     * @return this pour chaînage
      */
     public QueryParamsHandler<T> withCache(String cacheKey) {
         this.useCache = true;
@@ -150,13 +184,43 @@ public class QueryParamsHandler<T> {
         return this;
     }
 
+    public QueryParamsHandler<T> withRepository(PanacheRepository<T> repository){
+        this.repository=repository;
+        return this;
+    }
+
+    /**
+     * Méthode utilitaire statique pour obtenir un objet Sort
+     */
+    public static Sort getSort(String sortField, String sortOrder, Set<String> allowedSortFields) {
+        if (sortField == null || sortField.trim().isEmpty()) {
+            sortField = "createdAt";
+        }
+
+        // Vérifier si le champ de tri est autorisé
+        if (!allowedSortFields.isEmpty() && !allowedSortFields.contains(sortField)) {
+            LOG.warn("Tentative de tri (sort) sur un champ non autorisé: " + sortField);
+            sortField = "createdAt"; // Revenir au champ par défaut
+        }
+
+        if (!VALID_FIELD_PATTERN.matcher(sortField).matches()) {
+            LOG.warn("Nom de champ de tri invalide: " + sortField);
+            sortField = "createdAt"; // Revenir au champ par défaut
+        }
+
+        // Créer directement l'objet Sort avec la bonne direction
+        if ("asc".equalsIgnoreCase(sortOrder)) {
+            return Sort.ascending(sortField);
+        } else {
+            return Sort.descending(sortField);
+        }
+    }
+
     /**
      * Applique tous les paramètres de requête à la requête
-     *
-     * @return this pour chaînage
      */
     public QueryParamsHandler<T> handle() {
-        MultivaluedMap<String, String> queryParams = this.getQueryParams();
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
 
         try {
             // Recherche
@@ -173,7 +237,7 @@ public class QueryParamsHandler<T> {
             if (queryParams.containsKey("from") || queryParams.containsKey("to")) {
                 String dateField = queryParams.getFirst("dateField");
                 applyDateRange(
-                    dateField != null ? dateField : "created_at",
+                    dateField != null ? dateField : "createdAt",
                     queryParams.getFirst("from"),
                     queryParams.getFirst("to")
                 );
@@ -184,11 +248,6 @@ public class QueryParamsHandler<T> {
                 applyOrFilters(queryParams.getFirst("orFilter"));
             }
 
-
-            // Appliquer la clause WHERE si elle existe
-            if (whereClause.length() > 0) { 
-                query = query.filter(whereClause.toString(), parameters);
-            }
         } catch (Exception e) {
             LOG.error("Erreur lors du traitement des paramètres de requête", e);
             throw new BadRequestException("Erreur lors du traitement des paramètres de requête: " + e.getMessage(), e);
@@ -197,14 +256,8 @@ public class QueryParamsHandler<T> {
         return this;
     }
 
-    public MultivaluedMap<String,String> getQueryParams(){
-        return uriInfo.getQueryParameters();
-    }
-
     /**
      * Applique une recherche sur les champs configurés
-     *
-     * @param searchTerm Terme de recherche
      */
     protected void applySearch(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty() || searchFields.isEmpty()) {
@@ -226,9 +279,7 @@ public class QueryParamsHandler<T> {
             isFirst = false;
 
             String paramName = "searchParam" + (++paramCounter);
-
             whereClause.append(field).append(" LIKE :").append(paramName);
-
             parameters.put(paramName, "%" + searchTerm + "%");
         }
 
@@ -237,9 +288,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Applique des filtres complexes selon les paramètres de requête
-     *
-     * @param filtersJson JSON des filtres
-     * @throws JsonProcessingException si le JSON est malformé
      */
     protected void applyFilters(String filtersJson) throws JsonProcessingException {
         if (allowedFilters.isEmpty() || filtersJson == null || filtersJson.trim().isEmpty()) {
@@ -328,9 +376,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Applique des filtres avec l'opérateur OR
-     *
-     * @param filtersJson JSON des filtres à combiner avec OR
-     * @throws JsonProcessingException si le JSON est malformé
      */
     protected void applyOrFilters(String filtersJson) throws JsonProcessingException {
         if (allowedFilters.isEmpty() || filtersJson == null || filtersJson.trim().isEmpty()) {
@@ -344,7 +389,7 @@ public class QueryParamsHandler<T> {
         // Filtrer pour ne garder que les champs autorisés
         filters = filters.stream()
                 .filter(filter -> allowedFilters.contains(filter.getField()))
-                .collect(Collectors.toList());
+                .collect(java.util.stream.Collectors.toList());
 
         if (filters.isEmpty()) return;
 
@@ -392,12 +437,9 @@ public class QueryParamsHandler<T> {
 
     /**
      * Applique un filtrage par plage de dates sur le champ spécifié
-     *
-     * @param dateField Nom du champ de date
-     * @param from Date de début au format Y-m-d
-     * @param to Date de fin au format Y-m-d
-     */
+    */
     protected void applyDateRange(String dateField, String from, String to) {
+        
         if (!VALID_FIELD_PATTERN.matcher(dateField).matches()) {
             LOG.warn("Nom de champ de date invalide: " + dateField);
             return;
@@ -435,39 +477,8 @@ public class QueryParamsHandler<T> {
         }
     }
 
-  
-
-    public static Sort getSort(String sortField, String sortOrder,Set<String> allowedSortFields) {
-        if (sortField == null || sortField.trim().isEmpty()) {
-            sortField = "createdAt";
-        }
-
-        // Vérifier si le champ de tri est autorisé
-        if (!allowedSortFields.isEmpty() && !allowedSortFields.contains(sortField)) {
-            LOG.warn("Tentative de tri (sort) sur un champ non autorisé: " + sortField);
-            sortField = "createdAt"; // Revenir au champ par défaut
-        }
-
-        if (!VALID_FIELD_PATTERN.matcher(sortField).matches()) {
-            LOG.warn("Nom de champ de tri invalide: " + sortField);
-            sortField = "createdAt"; // Revenir au champ par défaut
-        }
-
-        Sort sort=Sort.by(sortField);
-
-        if("asc".equalsIgnoreCase(sortOrder)){
-            sort.ascending();
-        }else{
-            sort.descending();
-        }
-
-        return sort;
-    }
-
     /**
-     * Pagine les résultats de la requête
-     *
-     * @return Résultats paginés ou tous les résultats si 'all' est présent
+     * Pagine les résultats de la requête avec la nouvelle construction de requête
      */
     @CacheResult(cacheName = "query-results")
     public List<T> paginate() {
@@ -479,46 +490,92 @@ public class QueryParamsHandler<T> {
     }
 
     /**
-     * Méthode interne pour la pagination (utilisée pour la mise en cache)
+     * Méthode interne pour la pagination avec construction de requête JPQL
      */
     private List<T> paginateInternal() {
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
         
-        // Si 'all' est présent, retourner tous les résultats
-        if (queryParams.containsKey("all")) {
-            return query.list();
-        }
-
         // Calcul de la pagination
         int limit = Math.min(
             parseIntParam(queryParams.getFirst("limit"), defaultLimit),
             maxLimit
         );
         int page = Math.max(1, parseIntParam(queryParams.getFirst("page"), 1));
-
-        return query.page(Page.of(page - 1, limit)).list();
+        
+        // Si 'all' est présent, retourner tous les résultats
+        boolean returnAll = queryParams.containsKey("all");
+        
+        // Reconstruire complètement la requête si nécessaire
+        if (whereClause.length() > 0) {
+            // Utiliser l'API find directement avec notre clause WHERE
+            String jpql = whereClause.toString();
+            
+            PanacheQuery<T> newQuery;
+            
+            try {
+                // Construire la requête avec les bons paramètres
+                Parameters queryParams1 = new Parameters();
+                parameters.forEach(queryParams1::and);
+                
+                if (sort != null) {
+                    // Avec tri
+                    newQuery = repository.find(jpql, sort, queryParams1);
+                } else {
+                    // Sans tri
+                    newQuery = repository.find(jpql, queryParams1);
+                }
+            } catch (Exception e) {
+                LOG.error("Erreur lors de la construction de la requête: " + e.getMessage(), e);
+                throw new BadRequestException("Erreur lors de la construction de la requête", e);
+            }
+            
+            // Appliquer la pagination
+            if (returnAll) {
+                return newQuery.list();
+            } else {
+                return newQuery.page(Page.of(page - 1, limit)).list();
+            }
+        } else {
+            // Utiliser la requête originale
+            if (returnAll) {
+                return query.list();
+            } else {
+                return query.page(Page.of(page - 1, limit)).list();
+            }
+        }
     }
 
     /**
      * Récupère le nombre total d'enregistrements pour la requête actuelle
-     *
-     * @return Le nombre total d'enregistrements
      */
-    @CacheResult(cacheName = "query-count")
     public long count() {
-        return query.count();
+        // Reconstruire la requête count si nécessaire
+        if (whereClause.length() > 0) {
+            String jpql = whereClause.toString();
+            
+            try {
+                // Construire la requête avec les bons paramètres
+                Parameters queryParams = new Parameters();
+                parameters.forEach(queryParams::and);
+                
+                return repository.count(jpql, queryParams);
+            } catch (Exception e) {
+                LOG.error("Erreur lors de la construction de la requête count: " + e.getMessage(), e);
+                throw new BadRequestException("Erreur lors de la construction de la requête count", e);
+            }
+        } else {
+            // Utiliser la requête originale
+            return query.count();
+        }
     }
     
     /**
      * Obtient l'information de pagination pour la réponse API
-     *
-     * @return Map contenant les informations de pagination
      */
     public PaginationInfo getPaginationInfo() {
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-    
-        int page = Math.max(1, parseIntParam(queryParams.getFirst("page"), 1));
         
+        int page = Math.max(1, parseIntParam(queryParams.getFirst("page"), 1));
         int limit = Math.min(
             parseIntParam(queryParams.getFirst("limit"), defaultLimit),
             maxLimit
@@ -532,10 +589,6 @@ public class QueryParamsHandler<T> {
 
     /**
      * Parse une chaîne en entier avec valeur par défaut
-     *
-     * @param value Valeur à parser
-     * @param defaultValue Valeur par défaut
-     * @return Entier parsé ou valeur par défaut
      */
     private int parseIntParam(String value, int defaultValue) {
         if (value == null || value.trim().isEmpty()) {
@@ -550,29 +603,30 @@ public class QueryParamsHandler<T> {
 
     /**
      * Parse une chaîne de date avec différents formats possibles
-     *
-     * @param dateStr Chaîne de date
-     * @return LocalDate parsée
-     * @throws DateTimeParseException si le format est invalide
      */
     private LocalDate parseDate(String dateStr) throws DateTimeParseException {
         try {
-            return LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE);
+            return LocalDate.parse(dateStr);
         } catch (DateTimeParseException e) {
             try {
-                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                return LocalDate.parse(dateStr.replace("/", "-"));
             } catch (DateTimeParseException e2) {
-                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                // Format avec jour en premier
+                String[] parts = dateStr.split("[-/]");
+                if (parts.length == 3) {
+                    return LocalDate.of(
+                        Integer.parseInt(parts[2]),
+                        Integer.parseInt(parts[1]),
+                        Integer.parseInt(parts[0])
+                    );
+                }
+                throw e2;
             }
         }
     }
 
     /**
      * Parse le JSON de filtres en liste de conditions
-     *
-     * @param json JSON à parser
-     * @return Liste de conditions de filtre
-     * @throws JsonProcessingException si le JSON est malformé
      */
     private List<FilterCondition> parseFilters(String json) throws JsonProcessingException {
         if (json == null || json.trim().isEmpty()) {
@@ -580,32 +634,61 @@ public class QueryParamsHandler<T> {
         }
 
         try {
+            // Essayer d'abord comme un tableau de FilterCondition
             return objectMapper.readValue(json, new TypeReference<List<FilterCondition>>() {});
         } catch (JsonProcessingException e) {
-            // Essayer avec un format alternatif
             try {
+                // Essayer comme un objet simple
                 Map<String, Object> simpleFilters = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+                
+                // Convertir en liste de FilterCondition avec opérateur par défaut "eq"
                 return simpleFilters.entrySet().stream()
-                        .map(entry -> new FilterCondition(entry.getKey(), "eq", entry.getValue(), "string"))
-                        .collect(Collectors.toList());
+                        .map(entry -> new FilterCondition(entry.getKey(), "eq", entry.getValue(), 
+                            guessDataType(entry.getValue())))
+                        .collect(java.util.stream.Collectors.toList());
             } catch (JsonProcessingException e2) {
                 LOG.error("Erreur de parsing JSON", e);
                 throw new BadRequestException("Format de filtre invalide", e);
             }
         }
     }
+    
+    /**
+     * Essaie de deviner le type de données d'une valeur
+     */
+    private String guessDataType(Object value) {
+        if (value == null) return "string";
+        
+        if (value instanceof Number) {
+            if (value instanceof Integer || value instanceof Long) {
+                return "integer";
+            } else {
+                return "double";
+            }
+        } else if (value instanceof Boolean) {
+            return "boolean";
+        } else if (value instanceof String) {
+            // Essayer de détecter une date
+            String str = (String) value;
+            if (str.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return "date";
+            }
+        }
+        
+        return "string";
+    }
 
     /**
      * Convertit une valeur au type cible
-     *
-     * @param value Valeur à convertir
-     * @param dataType Type cible
-     * @return Valeur convertie
      */
     private Object convertValueToTargetType(Object value, String dataType) {
         if (value == null) return null;
         
         try {
+            if (dataType == null) {
+                dataType = "string";
+            }
+            
             switch (dataType.toLowerCase()) {
                 case "int":
                 case "integer":
@@ -643,7 +726,7 @@ public class QueryParamsHandler<T> {
                     break;
                 case "datetime":
                     if (value instanceof String) {
-                        return LocalDateTime.parse((String) value);
+                        return java.time.LocalDateTime.parse((String) value);
                     }
                     break;
                 case "list":
@@ -684,18 +767,6 @@ public class QueryParamsHandler<T> {
         }
         
         return url.toString();
-    }
-
-    /**
-     * Construit l'URL pour une page spécifique
-     */
-    private String buildPageUrl(String baseUrl, int page, int limit) {
-        String connector = baseUrl.contains("?") ? "&" : "?";
-        return baseUrl + connector + "page=" + page + "&limit=" + limit;
-    }
-
-    public static interface QueryWithSort<T>{
-        PanacheQuery<T> makeSortedQuery();
     }
 
     /**
