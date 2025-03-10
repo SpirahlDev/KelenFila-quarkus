@@ -2,7 +2,7 @@ package org.spirahldev.kelenFila.adapters.persistence.repositories;
 
 import java.time.LocalDateTime;
 
-import org.spirahldev.kelenFila.domain.interfaces.IPersonRepository;
+import org.spirahldev.kelenFila.domain.interfaces.repositories.IPersonRepository;
 import org.spirahldev.kelenFila.domain.model.Person;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;

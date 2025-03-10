@@ -6,6 +6,9 @@ import org.spirahldev.kelenFila.domain.model.Account;
 import org.spirahldev.kelenFila.domain.model.Person;
 import org.spirahldev.kelenFila.domain.model.ProfileEntity;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public interface IAccountService {
     public Account createAccount(ProfileEntity profile,Person person,AccountDataInput accountData) ;
 

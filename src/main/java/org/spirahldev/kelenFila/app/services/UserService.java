@@ -9,11 +9,9 @@ import org.spirahldev.kelenFila.common.constants.AppStatusCode;
 import org.spirahldev.kelenFila.domain.enums.ProfileCode;
 import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
 import org.spirahldev.kelenFila.domain.model.Account;
-import org.spirahldev.kelenFila.domain.model.CountryEntity;
 import org.spirahldev.kelenFila.domain.model.Person;
 import org.spirahldev.kelenFila.domain.model.ProfileEntity;
 
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

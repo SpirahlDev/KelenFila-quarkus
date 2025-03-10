@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 
-import org.spirahldev.kelenFila.adapters.persistence.repositories.AccountRepositoryImpl;
 import org.spirahldev.kelenFila.app.IOmodel.input.AccountDataInput;
 import org.spirahldev.kelenFila.app.IOmodel.input.UserLoginInput;
 import org.spirahldev.kelenFila.app.interfaces.IAccountService;
@@ -16,10 +15,11 @@ import org.spirahldev.kelenFila.domain.constants.DomainStatusCode;
 import org.spirahldev.kelenFila.domain.enums.PersonType;
 import org.spirahldev.kelenFila.domain.exceptions.BusinessException;
 import org.spirahldev.kelenFila.domain.exceptions.DomainException;
+import org.spirahldev.kelenFila.domain.interfaces.repositories.IAccountRepository;
+import org.spirahldev.kelenFila.domain.interfaces.services.IAccountDomainService;
 import org.spirahldev.kelenFila.domain.model.Account;
 import org.spirahldev.kelenFila.domain.model.Person;
 import org.spirahldev.kelenFila.domain.model.ProfileEntity;
-import org.spirahldev.kelenFila.domain.services.AccountDomainService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -29,10 +29,10 @@ import jakarta.ws.rs.core.Response;
 public class AccountService implements IAccountService{
 
     @Inject
-    AccountRepositoryImpl accountRepository;
+    IAccountRepository accountRepository;
 
     @Inject
-    AccountDomainService accountDomainService;
+    IAccountDomainService accountDomainService;
 
     @Inject
     AppConfig appConfig;

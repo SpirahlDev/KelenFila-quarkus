@@ -115,4 +115,26 @@ public class AppResponse<T> {
         return new AppResponse<>(AppStatusCode.VALIDATION_ERROR, errors);
     }
 
+    public Map<String,Object> withPagination(Map<String, Object> pagination){
+        Map<String, Object> responseMap = new HashMap<String, Object>();
+
+        responseMap.put("data", getData());
+        responseMap.put("statusCode", getStatusCode());
+        responseMap.put("statusMessage", getStatusMessage());
+
+        responseMap.put("pagination", pagination);
+        return responseMap;
+    }
+
+    public static <T> Map<String,Object> paginated(AppStatusCode statusCode, T data, PaginationInfo pagination){
+        Map<String, Object> responseMap = new HashMap<String, Object>();
+
+        responseMap.put("data", data);
+        responseMap.put("statusCode", statusCode.getCode());
+        responseMap.put("statusMessage", statusCode.getMessage());
+
+        responseMap.put("pagination", pagination);
+        return responseMap;
+    }
+
 }

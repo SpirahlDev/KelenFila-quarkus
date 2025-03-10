@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import org.spirahldev.kelenFila.common.constants.GlobalConstants;
 import org.spirahldev.kelenFila.domain.constants.DomainStatusCode;
 import org.spirahldev.kelenFila.domain.exceptions.DomainException;
+import org.spirahldev.kelenFila.domain.interfaces.services.IAccountDomainService;
 import org.spirahldev.kelenFila.domain.model.Account;
 import org.spirahldev.kelenFila.domain.model.Person;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class AccountDomainService {
+public class AccountDomainService implements IAccountDomainService{
 
     public boolean canUpdateProfile(Account account) {
         return account.getSuspensionDate()!=null && account.getVerificationDate()!=null;

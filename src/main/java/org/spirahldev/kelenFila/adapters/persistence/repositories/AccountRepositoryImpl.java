@@ -1,14 +1,12 @@
 package org.spirahldev.kelenFila.adapters.persistence.repositories;
 
-import org.spirahldev.kelenFila.domain.interfaces.IAccountRepository;
+import org.spirahldev.kelenFila.domain.interfaces.repositories.IAccountRepository;
 import org.spirahldev.kelenFila.domain.model.Account;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class AccountRepositoryImpl implements PanacheRepository<Account>,IAccountRepository{
+public class AccountRepositoryImpl implements IAccountRepository{
 
     @Override
     public Account createAccount(Account account) {

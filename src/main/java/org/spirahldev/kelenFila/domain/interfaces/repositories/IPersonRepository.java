@@ -1,4 +1,4 @@
-package org.spirahldev.kelenFila.domain.interfaces;
+package org.spirahldev.kelenFila.domain.interfaces.repositories;
 
 
 import org.spirahldev.kelenFila.domain.model.Person;

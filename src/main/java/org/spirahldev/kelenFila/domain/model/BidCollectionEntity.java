@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 @Table(name = "bid_collection")
 public class BidCollectionEntity extends PanacheEntityBase{
 
-        
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
@@ -89,6 +88,14 @@ public class BidCollectionEntity extends PanacheEntityBase{
 
     public void setAuction(Auction auction) {
         this.auction = auction;
+    }
+
+    public Integer getCollectionNumber() {
+        return collectionNumber;
+    }
+
+    public void setCollectionNumber(Integer collectionNumber) {
+        this.collectionNumber = collectionNumber;
     }
 
     // public List<CollectionArticleEntity> getCollectionArticles() {

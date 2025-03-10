@@ -32,7 +32,7 @@ CREATE TABLE `account` (
   `login` varchar(160) NOT NULL,
   `password` varchar(220) NOT NULL,
   `verified_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `suspended_at` timestamp NULL DEFAULT NULL,
   `remember_token` varchar(160) DEFAULT NULL,
   `person_type` enum('NATURAL','LEGAL') NOT NULL DEFAULT 'NATURAL',
@@ -53,7 +53,7 @@ CREATE TABLE `administrative_document` (
   `id` bigint(20) NOT NULL,
   `account_id` bigint(20) NOT NULL,
   `administrative_doc_type` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -67,7 +67,7 @@ CREATE TABLE `administrative_document_type` (
   `id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
   `code` varchar(200) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -94,7 +94,7 @@ CREATE TABLE `article` (
   `awarded_at` datetime DEFAULT NULL,
   `awarded_price` double DEFAULT NULL,
   `category_id` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -113,7 +113,7 @@ CREATE TABLE `auction` (
   `cover_image` varchar(400) DEFAULT NULL,
   `date` datetime NOT NULL,
   `time_took` time DEFAULT NULL COMMENT 'The time the auction took',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -127,7 +127,7 @@ CREATE TABLE `bid_collection` (
   `id` bigint(20) NOT NULL,
   `collection_number` int(11) NOT NULL DEFAULT 1,
   `name` varchar(100) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
   `description` varchar(400) DEFAULT NULL,
   `auction_id` bigint(20) NOT NULL
@@ -144,7 +144,7 @@ CREATE TABLE `category` (
   `name` varchar(100) NOT NULL,
   `preview_image` varchar(400) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -170,7 +170,7 @@ CREATE TABLE `country` (
   `country_name` varchar(45) NOT NULL,
   `telephone_code` varchar(45) NOT NULL,
   `country_code` varchar(45) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -223,7 +223,7 @@ CREATE TABLE `moral_person` (
   `city` varchar(200) NOT NULL,
   `country_id` int(11) NOT NULL,
   `moral_person_type_id` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL,
   `account_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -238,7 +238,7 @@ CREATE TABLE `moral_person_type` (
   `id` int(11) NOT NULL,
   `name` varchar(45) NOT NULL,
   `code` varchar(45) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -252,7 +252,7 @@ CREATE TABLE `participant` (
   `account_id` bigint(20) NOT NULL,
   `auction_id` bigint(20) NOT NULL,
   `participant_role_id` bigint(20) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `has_join_auction` tinyint(1) DEFAULT 0,
   `has_actived_notification` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -267,7 +267,7 @@ CREATE TABLE `participant_role` (
   `id` bigint(20) NOT NULL,
   `label` varchar(45) NOT NULL,
   `code` varchar(45) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 

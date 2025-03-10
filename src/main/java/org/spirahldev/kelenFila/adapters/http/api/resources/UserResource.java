@@ -32,7 +32,7 @@ public class UserResource {
     Validator validator;
 
     @Inject
-    IUserService userService;
+    IUserService userService; /**@UserService */
 
     @Inject
     IAccountService accountService;
@@ -48,7 +48,6 @@ public class UserResource {
          * @param requestBody
          * @return
          */
-
         PersonDataInput personData = requestBody.getPersonData();
         AccountDataInput accountData = requestBody.getAccountData();
 

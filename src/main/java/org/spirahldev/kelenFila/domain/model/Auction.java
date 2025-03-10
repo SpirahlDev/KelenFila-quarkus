@@ -112,4 +112,20 @@ public class Auction {
         this.ownerAccount = ownerAccount;
     }
 
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public LocalTime getAuctionTimeTook() {
+        return auctionTimeTook;
+    }
+
+    public void setAuctionTimeTook(LocalTime auctionTimeTook) {
+        this.auctionTimeTook = auctionTimeTook;
+    }
+
 }
